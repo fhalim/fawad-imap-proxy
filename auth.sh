@@ -56,11 +56,12 @@ for i in $(seq 1 15); do
 done
 
 # ── Trigger device flow by sending an IMAP LOGIN ─────────────────────────────
-# The proxy only initiates OAuth2 when it sees a LOGIN command.
+# Run nc in background so log tail starts immediately
 echo ""
 echo "Triggering device flow auth..."
-printf "A1 LOGIN %s dummypassword\r\nA2 LOGOUT\r\n" "${EMAIL}" \
-  | nc -q 5 127.0.0.1 1143 2>/dev/null || true
+printf "A1 LOGIN %s dummypassword\r\n" "${EMAIL}" \
+  | nc -q 600 127.0.0.1 1143 2>/dev/null &
+NC_PID=$!
 
 # ── Show device flow instructions from logs ───────────────────────────────────
 echo ""
@@ -69,3 +70,5 @@ echo "Look for: 'Please visit' or 'microsoft.com/devicelogin' with a user code."
 echo "Go to that URL on any device and sign in with your Outlook account."
 echo ""
 docker logs -f "${CONTAINER_NAME}"
+
+kill "${NC_PID}" 2>/dev/null || true

@@ -24,29 +24,31 @@ cp .env.example .env
 # CLIENT_ID already set to Thunderbird's public app (no Azure setup needed)
 ```
 
-### 2. Authorize (first run only)
+### 2. Start proxy and authorize (first run only)
 
+**Terminal 1** — start proxy and watch logs:
 ```bash
 ./auth.sh
+# or after first run: ./start.sh
+docker logs -f fawad-imap-proxy
 ```
 
-Output will show:
+**Terminal 2** — trigger the OAuth2 device flow:
+```bash
+printf "A1 LOGIN youremail@outlook.com dummypassword\r\n" | nc -q 300 127.0.0.1 1143
 ```
-Triggering device flow auth...
-=== Watching proxy logs for device flow URL ===
-...
-Please visit the following URL to authenticate account youremail@outlook.com:
-https://microsoft.com/devicelogin
-Enter code: ABC1234
+
+Terminal 1 will show:
+```
+Visit https://www.microsoft.com/link and use code ABC1234
 ```
 
 **On any device with a browser:**
-- Visit `https://microsoft.com/devicelogin`
-- Enter the code displayed (e.g., `ABC1234`)
+- Visit `https://www.microsoft.com/link`
+- Enter the code shown in Terminal 1
 - Sign in with your personal Outlook.com account
-- Return to terminal, Ctrl+C to exit logs
 
-Tokens now cached. Proxy auto-refreshes them on use.
+Keep Terminal 2 open until authorization completes. Tokens are then cached in the Docker volume and auto-refreshed on use.
 
 ### 3. Configure mbsync
 
@@ -57,8 +59,8 @@ IMAPAccount outlook-proxy
   Host 127.0.0.1
   Port 1143
   User youremail@outlook.com
-  Pass anything
-  TLSType None
+  Pass dummypassword
+  SSLType None
   AuthMechs LOGIN
 
 IMAPStore outlook-remote
@@ -135,7 +137,7 @@ Thunderbird's public client ID is included and works for personal Outlook.com ac
 - Thunderbird ID blocked in your region: register own Azure app (see above)
 
 **"mbsync: IMAP command 'LOGIN' returned an error"**
-- Missing `TLSType None` in `.mbsyncrc` (port 1143 is plaintext)
+- Missing `SSLType None` in `.mbsyncrc` (port 1143 is plaintext)
 - Check `docker logs fawad-imap-proxy` for proxy-side errors
 
 **"Tokens expired / need to re-auth"**
