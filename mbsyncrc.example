@@ -1,12 +1,19 @@
-# Paste relevant sections into ~/.mbsyncrc
-# The proxy handles OAuth2; mbsync only needs basic IMAP AUTH on localhost.
+# mbsync config for Outlook.com via fawad-imap-proxy
+#
+# Usage:
+#   cp mbsyncrc.example ~/.mbsyncrc   (or append to existing)
+#   sed -i 's/youremail@outlook.com/YOUR_ACTUAL_EMAIL/' ~/.mbsyncrc
+#   mkdir -p ~/Mail/Outlook
+#   mbsync -a
+#
+# Requires: proxy running on localhost:1143 (./auth.sh first)
 
 IMAPAccount outlook-proxy
   Host 127.0.0.1
   Port 1143
   User youremail@outlook.com
-  Pass anything_proxy_ignores_this
-  TLSType None
+  Pass anything_proxy_ignores_this    # proxy ignores this; OAuth2 handles real auth
+  TLSType None                        # REQUIRED — port 1143 is plaintext
   AuthMechs LOGIN
 
 IMAPStore outlook-remote
@@ -17,10 +24,41 @@ MaildirStore outlook-local
   Path ~/Mail/Outlook/
   Inbox ~/Mail/Outlook/Inbox
 
-Channel outlook
+# Sync everything
+Channel outlook-all
   Far :outlook-remote:
   Near :outlook-local:
   Patterns *
   Create Both
   Expunge None
   SyncState *
+
+# --- OR sync specific folders only ---
+
+Channel outlook-inbox
+  Far :outlook-remote:
+  Near :outlook-local:
+  Patterns "INBOX"
+  Create Near
+  Expunge None
+  SyncState *
+
+Channel outlook-sent
+  Far :outlook-remote:"Sent Items"
+  Near :outlook-local:"Sent Items"
+  Create Near
+  Expunge None
+  SyncState *
+
+Channel outlook-archive
+  Far :outlook-remote:"Archive"
+  Near :outlook-local:"Archive"
+  Create Near
+  Expunge None
+  SyncState *
+
+# Group channels for `mbsync outlook-essential`
+Group outlook-essential
+  Channel outlook-inbox
+  Channel outlook-sent
+  Channel outlook-archive
