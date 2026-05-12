@@ -1,0 +1,26 @@
+# Paste relevant sections into ~/.mbsyncrc
+# The proxy handles OAuth2; mbsync only needs basic IMAP AUTH on localhost.
+
+IMAPAccount outlook-proxy
+  Host 127.0.0.1
+  Port 1143
+  User youremail@outlook.com
+  Pass anything_proxy_ignores_this
+  TLSType None
+  AuthMechs LOGIN
+
+IMAPStore outlook-remote
+  Account outlook-proxy
+
+MaildirStore outlook-local
+  SubFolders Verbatim
+  Path ~/Mail/Outlook/
+  Inbox ~/Mail/Outlook/Inbox
+
+Channel outlook
+  Far :outlook-remote:
+  Near :outlook-local:
+  Patterns *
+  Create Both
+  Expunge None
+  SyncState *
