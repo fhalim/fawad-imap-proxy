@@ -112,19 +112,6 @@ docker rm -f fawad-imap-proxy
 docker volume rm fawad-imap-proxy-tokens
 ```
 
-## Azure App Registration (Optional)
-
-Thunderbird's public client ID is included and works for personal Outlook.com accounts. If you need your own Azure app:
-
-1. Visit https://entra.microsoft.com
-2. **Identity** → **Applications** → **App registrations** → **New registration**
-3. Name: `imap-oauth2-proxy` (or anything)
-4. **Supported account types:** `Personal Microsoft accounts only` (critical)
-5. **Redirect URI:** Platform `Mobile and desktop applications`, URI `http://localhost`
-6. After registration, go to **Authentication** → **Advanced settings** → **Allow public client flows:** Yes
-7. **API permissions** → **Add permission** → Search `Office 365 Exchange Online` → **Delegated permissions** → `IMAP.AccessAsUser.All`
-8. Copy the **Application (client) ID**
-9. Update `CLIENT_ID` in `.env` and re-run `./auth.sh`
 
 ## Troubleshooting
 
@@ -134,7 +121,6 @@ Thunderbird's public client ID is included and works for personal Outlook.com ac
 
 **"Port 1143 IMAP LOGIN fails after device flow"**
 - Device flow incomplete: check `docker logs fawad-imap-proxy` for auth errors
-- Thunderbird ID blocked in your region: register own Azure app (see above)
 
 **"mbsync: IMAP command 'LOGIN' returned an error"**
 - Missing `SSLType None` in `.mbsyncrc` (port 1143 is plaintext)
